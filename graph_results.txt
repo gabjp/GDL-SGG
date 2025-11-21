@@ -1,0 +1,14 @@
+===== MUTAG VALIDATION RESULTS =====
+
+MLP Baseline:
+Accuracy : 0.8684
+Precision: 0.8636
+Recall   : 0.9048
+F1-score : 0.8837
+
+GIN Model:
+Accuracy : 0.8947
+Precision: 0.9474
+Recall   : 0.8571
+F1-score : 0.9000
+====================================

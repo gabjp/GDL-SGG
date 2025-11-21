@@ -1,0 +1,4 @@
+in_dim: 7
+hidden_dim: 64
+mlp: []
+num_classes: 2

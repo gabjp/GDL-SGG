@@ -1,0 +1,2 @@
+dim_list: [980, 64, 64, 2]
+activation: relu

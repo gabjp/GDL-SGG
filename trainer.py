@@ -5,12 +5,15 @@ import random
 import yaml
 import os
 import json
+from torch.optim.lr_scheduler import ExponentialLR
 
-from common.MLP import PointCloudMLP
+from common.MLP import PointCloudMLP, GraphMLP
 from common.train_utils import train_model, linear_scheduler
 from Sets.DeepSets import DeepSet
 from Sets.data import get_ModelNet_dataloader
-from torch.optim.lr_scheduler import ExponentialLR
+from Graphs.data import get_MUTAG_dataloader
+from Graphs.GNN import GIN
+
 
 def set_seed(seed: int = 42):
     print(f"Setting seed: {seed}")
@@ -101,17 +104,23 @@ def main():
     with open(args.config_path, "r") as f:
         model_kwargs = yaml.safe_load(f)
 
+    criterion = torch.nn.CrossEntropyLoss()
+
     if args.dataset == "ModelNet10":
         train_loader, val_loader = get_ModelNet_dataloader(batch_size=args.batch_size)
-        criterion = torch.nn.CrossEntropyLoss()
         if args.model_type == "MLP":
             model = PointCloudMLP(**model_kwargs)
         elif args.model_type == "DeepSet":
             model = DeepSet(**model_kwargs)
-        else:
-            raise NotImplementedError()
-    else:
-        raise NotImplementedError()
+
+        
+    elif args.dataset == "MUTAG":
+        train_loader, val_loader = get_MUTAG_dataloader(batch_size=args.batch_size)
+        if args.model_type == "MLP":
+            model = GraphMLP(**model_kwargs)
+        elif args.model_type == "GNN":
+            model = GIN(**model_kwargs)
+
 
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Trainable parameters:", n_params)
@@ -127,7 +136,7 @@ def main():
         scheduler = ExponentialLR(opt, gamma=0.95)
     elif args.scheduler == "linear":
         scheduler = linear_scheduler(opt, total_epochs = args.epochs)
-    elif args.scheduler is None:
+    elif args.scheduler == "none":
         scheduler = None
     else: 
         raise NotImplementedError()
@@ -153,7 +162,6 @@ def main():
     # Save the model weights (.pth)
     model_save_path = directory + "/model.pth"
     torch.save(model.state_dict(), model_save_path)
-    print(f"Model saved to: {model_save_path}")
 
     # Save the config dictionary as JSON
     json_path = directory + "/results.json"

@@ -49,6 +49,7 @@ def train_model(
             correct += (preds == y).sum().item()
             total += y.size(0)
 
+
             train_bar.set_description(f"Epoch {epoch+1}/{epochs} | Loss: {loss.item():.4f}")
 
         train_loss = running_loss / len(train_loader.dataset)

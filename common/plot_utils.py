@@ -115,3 +115,119 @@ def refined_plot(
 
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     return fig
+
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+import torch
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+import torch
+
+
+def refined_plot_graphs(
+    edge_index_list,      # list of 4 PyG edge_index tensors
+    mlp_preds,            # shape: (4, 2)
+    gnn_preds,            # shape: (4, 2)
+    labels,              # shape: (4,)
+    figsize=(20, 11)
+):
+
+    def to_numpy(x):
+        if hasattr(x, "detach"):
+            return x.detach().cpu().numpy()
+        return np.asarray(x)
+    
+    edge_index_list = [to_numpy(ei) for ei in edge_index_list]
+    mlp_preds = to_numpy(mlp_preds)
+    gnn_preds = to_numpy(gnn_preds)
+    labels = to_numpy(labels)
+
+    assert len(edge_index_list) == 4
+    assert mlp_preds.shape == gnn_preds.shape == (4, 2)
+
+    num_graphs = 4
+    x_idxs = np.arange(2)
+
+    # ---- MUTAG labels ----
+    mutag_labels = ["Non-Mutagenic", "Mutagenic"]
+
+    # ---- Color Palette ----
+    color_A = "#C65A5A"   # MLP
+    color_B = "#8E3B3B"   # GNN
+    node_color = "#CC4C4C"
+    background_color = "#F6EAEA"
+
+    plt.rcParams["axes.spines.top"] = False
+    plt.rcParams["axes.spines.right"] = False
+
+    fig = plt.figure(figsize=figsize)
+
+    # ----------------------- Row 1: Graphs -----------------------
+    for i in range(num_graphs):
+        ax = fig.add_subplot(3, 4, i + 1)
+
+        edges = list(zip(edge_index_list[i][0], edge_index_list[i][1]))
+        G = nx.Graph()
+        G.add_edges_from(edges)
+
+        pos = nx.spring_layout(G, seed=42)
+
+        nx.draw(
+            G, pos, ax=ax,
+            node_size=350,
+            node_color=node_color,
+            edge_color=color_B,
+            width=2,
+            labels={},                # <--- removes node numbers
+        )
+
+        ax.set_title(
+            f"Label: {mutag_labels[int(labels[i])]}", 
+            fontsize=14, weight="bold"
+        )
+
+    # ----------------------- Title Row 2 -----------------------
+    fig.text(0.5, 0.65, "MLP Predictions", ha="center", fontsize=16, weight="bold")
+
+    # ----------------------- Row 2: MLP Histograms -----------------------
+    for i in range(num_graphs):
+        ax = fig.add_subplot(3, 4, 4 + i + 1)
+        ax.set_facecolor(background_color)
+
+        ax.bar(x_idxs, mlp_preds[i], capsize=3, alpha=0.9, color=color_A)
+        ax.set_facecolor("#F2F2F2")
+        ax.set_ylim(0, 1)
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", linestyle="--", alpha=0.18,)
+
+        ax.set_xticks(x_idxs)
+        ax.set_xticklabels(mutag_labels, rotation=15, fontsize=10)
+        if i == 0:
+            ax.set_ylabel("Prediction average", fontsize=12)
+
+    # ----------------------- Title Row 3 -----------------------
+    fig.text(0.5, 0.335, "GNN Predictions", ha="center", fontsize=16, weight="bold")
+
+    # ----------------------- Row 3: GNN Histograms -----------------------
+    for i in range(num_graphs):
+        ax = fig.add_subplot(3, 4, 8 + i + 1)
+        ax.set_facecolor(background_color)
+
+        ax.bar(x_idxs, gnn_preds[i], capsize=3, alpha=0.9, color=color_B)
+        ax.set_facecolor("#F2F2F2")
+        ax.set_ylim(0, 1)
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", linestyle="--", alpha=0.18)
+
+        ax.set_xticks(x_idxs)
+        ax.set_xticklabels(mutag_labels, rotation=15, fontsize=10)
+        ax.set_xlabel("Class")
+        if i == 0:
+            ax.set_ylabel("Probability", fontsize=12)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    return fig
