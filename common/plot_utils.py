@@ -43,7 +43,7 @@ def refined_plot(
     # ---- Global histogram scaling ----
     global_min = 0#min(means_A.min(), means_B.min())
     global_max = 1#max((means_A + stds_A).max(), (means_B + stds_B).max())
-    pad = 0.05 # 0.1 * (global_max - global_min)
+    pad = 0.0 # 0.1 * (global_max - global_min)
 
     plt.rcParams["axes.spines.top"] = False
     plt.rcParams["axes.spines.right"] = False
@@ -71,7 +71,7 @@ def refined_plot(
         ax.zaxis.set_tick_params(size=0)
 
     # ----------------------- Row Title Above Row 2 -----------------------
-    fig.text(0.5, 0.65, "MLP", ha="center", fontsize=16, weight="bold")
+    fig.text(0.5, 0.65, "MLP Predictions", ha="center", fontsize=16, weight="bold")
 
     # ----------------------- Row 2: Histograms A -----------------------
     for i in range(num_clouds):
@@ -90,10 +90,10 @@ def refined_plot(
         ax.set_xticklabels(modelnet10_labels, rotation=45, ha="right", fontsize=8)
 
         if i == 0:
-            ax.set_ylabel("Prediction average", fontsize=12)
+            ax.set_ylabel("Prediction Average", fontsize=12)
 
     # ----------------------- Row Title Above Row 3 -----------------------
-    fig.text(0.5, 0.335, "DeepSet", ha="center", fontsize=16, weight="bold")
+    fig.text(0.5, 0.335, "DeepSet Predictions", ha="center", fontsize=16, weight="bold")
 
     # ----------------------- Row 3: Histograms B -----------------------
     for i in range(num_clouds):
@@ -109,7 +109,7 @@ def refined_plot(
 
         ax.set_xticks(x_idxs)
         ax.set_xticklabels(modelnet10_labels, rotation=45, ha="right", fontsize=8)
-        ax.set_xlabel("Class Label")
+        ax.set_xlabel("Class")
         if i == 0:
             ax.set_ylabel("Prediction Average", fontsize=12)
 
@@ -207,7 +207,7 @@ def refined_plot_graphs(
         ax.set_xticks(x_idxs)
         ax.set_xticklabels(mutag_labels, rotation=15, fontsize=10)
         if i == 0:
-            ax.set_ylabel("Prediction average", fontsize=12)
+            ax.set_ylabel("Prediction Average", fontsize=12)
 
     # ----------------------- Title Row 3 -----------------------
     fig.text(0.5, 0.335, "GNN Predictions", ha="center", fontsize=16, weight="bold")
@@ -227,7 +227,107 @@ def refined_plot_graphs(
         ax.set_xticklabels(mutag_labels, rotation=15, fontsize=10)
         ax.set_xlabel("Class")
         if i == 0:
-            ax.set_ylabel("Probability", fontsize=12)
+            ax.set_ylabel("Prediction Average", fontsize=12)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    return fig
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+def refined_plot_mnist(
+    images,          # list of 4 MNIST tensors [28, 28] or [1, 28, 28]
+    mlp_preds,       # shape: (4, N_CLASSES)
+    cnn_preds,       # shape: (4, N_CLASSES)
+    labels,          # shape: (4,)
+    figsize=(20, 11)
+):
+
+    def to_numpy(x):
+        if hasattr(x, "detach"):
+            return x.detach().cpu().numpy()
+        return np.asarray(x)
+
+    # ---- Convert inputs ----
+    images = [to_numpy(img).squeeze() for img in images]
+    mlp_preds = to_numpy(mlp_preds)
+    cnn_preds = to_numpy(cnn_preds)
+    labels = to_numpy(labels)
+
+    assert len(images) == 4
+    assert mlp_preds.shape == cnn_preds.shape
+    assert mlp_preds.shape[0] == 4
+
+    num_items = 4
+    num_classes = mlp_preds.shape[1]
+    x_idxs = np.arange(num_classes)
+    class_names = [str(i) for i in range(num_classes)]
+
+    # ---- Colors ----
+    color_A = "#C65A5A"      # MLP bars
+    color_B = "#8E3B3B"      # CNN bars
+    hist_bg = "#F2F2F2"      # GRAY histogram background
+
+    plt.rcParams["axes.spines.top"] = False
+    plt.rcParams["axes.spines.right"] = False
+
+    fig = plt.figure(figsize=figsize)
+
+    # ----------------------- Row 1: MNIST Images -----------------------
+    for i in range(num_items):
+        ax = fig.add_subplot(3, 4, i + 1)
+        ax.set_facecolor("white")   # image background WHITE
+
+        img = images[i]
+        # invert: background white, digit black
+        img_disp = img.max() - img
+
+        ax.imshow(img_disp, cmap="gray")
+        ax.axis("off")
+        ax.set_title(
+            f"Label: {class_names[int(labels[i])]}",
+            fontsize=14, weight="bold"
+        )
+
+    # ----------------------- Title Row 2 -----------------------
+    fig.text(0.5, 0.64, "MLP Predictions", ha="center",
+             fontsize=14, weight="bold")
+
+    # ----------------------- Row 2: MLP Histograms -----------------------
+    for i in range(num_items):
+        ax = fig.add_subplot(3, 4, 4 + i + 1)
+        ax.set_facecolor(hist_bg)   # HISTOGRAM BACKGROUND GRAY
+
+        ax.bar(x_idxs, mlp_preds[i], capsize=3, alpha=0.9, color=color_A)
+        ax.set_ylim(0, 1)
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", linestyle="--", alpha=0.18)
+
+        ax.set_xticks(x_idxs)
+        ax.set_xticklabels(class_names, rotation=15, fontsize=10)
+        if i == 0:
+            ax.set_ylabel("Prediction Average", fontsize=12)  # <- fixed
+
+    # ----------------------- Title Row 3 -----------------------
+    fig.text(0.5, 0.327, "CNN Predictions", ha="center",
+             fontsize=14, weight="bold")
+
+    # ----------------------- Row 3: CNN Histograms -----------------------
+    for i in range(num_items):
+        ax = fig.add_subplot(3, 4, 8 + i + 1)
+        ax.set_facecolor(hist_bg)   # HISTOGRAM BACKGROUND GRAY
+
+        ax.bar(x_idxs, cnn_preds[i], capsize=3, alpha=0.9, color=color_B)
+        ax.set_ylim(0, 1)
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", linestyle="--", alpha=0.18)
+
+        ax.set_xticks(x_idxs)
+        ax.set_xticklabels(class_names, rotation=15, fontsize=10)
+        ax.set_xlabel("Class")
+        if i == 0:
+            ax.set_ylabel("Prediction Average", fontsize=12)  # <- fixed
 
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     return fig

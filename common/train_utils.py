@@ -36,7 +36,6 @@ def train_model(
         for x,y in train_bar:
 
             x, y = x.to(device), y.to(device)
-
             optimizer.zero_grad()
             out = model(x)
             loss = criterion(out, y)

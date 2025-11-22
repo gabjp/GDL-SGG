@@ -91,3 +91,7 @@ class GraphMLP(MLP):
         x = batch_to_fixed_vectors(x, edge_index, batch)
         return self.model(x)
         
+class ImageMLP(MLP):
+    def forward(self, x):
+        x = x.reshape(x.shape[0], -1)
+        return self.model(x)

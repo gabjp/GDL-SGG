@@ -7,13 +7,14 @@ import os
 import json
 from torch.optim.lr_scheduler import ExponentialLR
 
-from common.MLP import PointCloudMLP, GraphMLP
+from common.MLP import PointCloudMLP, GraphMLP, ImageMLP
 from common.train_utils import train_model, linear_scheduler
 from Sets.DeepSets import DeepSet
 from Sets.data import get_ModelNet_dataloader
 from Graphs.data import get_MUTAG_dataloader
 from Graphs.GNN import GIN
-
+from Grids.data import get_MNIST_dataloader
+from Grids.CNN import CNN
 
 def set_seed(seed: int = 42):
     print(f"Setting seed: {seed}")
@@ -120,6 +121,13 @@ def main():
             model = GraphMLP(**model_kwargs)
         elif args.model_type == "GNN":
             model = GIN(**model_kwargs)
+
+    elif args.dataset == "MNIST":
+        train_loader, val_loader = get_MNIST_dataloader(batch_size=args.batch_size)
+        if args.model_type == "MLP":
+            model = ImageMLP(**model_kwargs)
+        elif args.model_type == "CNN":
+            model = CNN(**model_kwargs)
 
 
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
