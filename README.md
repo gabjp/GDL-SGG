@@ -6,7 +6,7 @@
 **Institution:** Institute of Mathematics, Statistics and Computer Science, University of São Paulo  
 **Year:** 2025  
 
-For more information, check the [Monograph Page](gabjp.github.io/ug-thesis). 
+For more information, check the [Monograph Page](https://gabjp.github.io/ug-thesis/). 
 
 Contact gabrieljp (at) usp.br.
 
