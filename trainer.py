@@ -132,6 +132,8 @@ def main():
 
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Trainable parameters:", n_params)
+
+    assert False
     
     if args.optimizer == "adam":
         opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)

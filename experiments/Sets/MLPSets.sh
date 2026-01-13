@@ -7,6 +7,6 @@ CUDA_VISIBLE_DEVICES=0 python trainer.py \
     --optimizer adam \
     --scheduler log \
     --model-type MLP \
-    --config-path experiments/MLPSets.yaml \
+    --config-path experiments/Sets/MLPSets.yaml \
     --exp_name mlp-set-batchnorm
 

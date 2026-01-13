@@ -7,6 +7,6 @@ CUDA_VISIBLE_DEVICES=1 python trainer.py \
     --optimizer adam \
     --scheduler log \
     --model-type MLP \
-    --config-path experiments/MLPGraphs.yaml \
+    --config-path experiments/Graphs/MLPGraphs.yaml \
     --exp_name MLPGraphs-batchnorm
 

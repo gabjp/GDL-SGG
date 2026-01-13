@@ -93,7 +93,7 @@ def refined_plot(
             ax.set_ylabel("Prediction Average", fontsize=12)
 
     # ----------------------- Row Title Above Row 3 -----------------------
-    fig.text(0.5, 0.335, "DeepSet Predictions", ha="center", fontsize=16, weight="bold")
+    fig.text(0.5, 0.335, "DeepSets Predictions", ha="center", fontsize=16, weight="bold")
 
     # ----------------------- Row 3: Histograms B -----------------------
     for i in range(num_clouds):

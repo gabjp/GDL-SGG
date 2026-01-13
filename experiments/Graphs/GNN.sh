@@ -7,6 +7,6 @@ CUDA_VISIBLE_DEVICES=0 python trainer.py \
     --optimizer adam \
     --scheduler log \
     --model-type GNN \
-    --config-path experiments/GNN.yaml \
+    --config-path experiments/Graphs/GNN.yaml \
     --exp_name GNN-batchnorm
 

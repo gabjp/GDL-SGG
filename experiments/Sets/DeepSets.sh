@@ -7,6 +7,6 @@ CUDA_VISIBLE_DEVICES=0 python trainer.py \
     --optimizer adam \
     --scheduler log \
     --model-type DeepSet \
-    --config-path experiments/DeepSets.yaml \
+    --config-path experiments/Sets/DeepSets.yaml \
     --exp_name deep-set-batchnorm
 
